@@ -115,6 +115,8 @@ namespace CIFASFormatter3
 
         private void btn_generate_output_Click(object sender, EventArgs e)
         {
+            //int numOfFiles = my_datatable.Rows.Count / 500 +  (my_datatable.Rows.Count % 500 > 0 ? 1 :0 );
+            //MessageBox.Show("" + numOfFiles + " output files will be generated! \n\nEach file contains 500 rows covering totl of " + my_datatable.Rows.Count + " lines.");
             //MessageBox.Show("Generating Output Files ...");
 
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -143,30 +145,65 @@ namespace CIFASFormatter3
 
                     sW = new StreamWriter(saveFileDialog.FileName);
 
-                    sW.WriteLine("Surname,FirstName,BirthDate,HomeTelephone,MobileTelephone,Flat,HouseName,HouseNumber,Street,Town,Postcode");
+                    sW.WriteLine(
+                            "Surname," +            //min=2, max=25
+                            "FirstName," +          //max=20
+                            "BirthDate," +          //DD/MM/YYYY
+                            "HomeTelephone," +      //Max 20 - Text - Zeors not lost
+                            "MobileTelephone," +    //Max 20
+                            "EmployerTelephone," +  //Max 20
+                            "WorkTelephone" +       //Max 20
+                            "EmailAddress" +        //Max 60
+                            "RegisteredCompanyName" +       //Min 2, Max 70
+                            "RegisteredCompanyNumber" +     //Max 8
+                            "CompanyTelephone" +            //Max 20
+                            "VehicleRigistrationNumber" +   //Max 10
+                            "VehicleIdentificationNumber" + //Max 50
+                            "YourInternalReference" +       //Max 20
+                            "Flat" +                //Max 20
+                            "HouseName," +          //Max 20
+                            "HouseNumber," +        //Max 10
+                            "Street," +             //Max 30
+                            "Town," +               //Max 20
+                            "Postcode," +           //Min 5, Max 8
+                            "CardNumber," +         //Max 19
+                            "AccountNumber," +      //Max 20
+                            "SortCode," +           //Max 6
+                            "DocumentationReference"        //Max 25
+                            );
 
                     for (int row = 0; row < my_datatable.Rows.Count; row++)
                     {
-                        string lines = "";
-                        //for (int col = 0; col < 4; col++)
-                        //{
-                        //1,0,2,4,3,5,7,6,8,11,13
-                        lines += (string.IsNullOrEmpty(lines) ? "" : ",")
-                            + my_datatable.Rows[row][1].ToString() + ","
-                            + my_datatable.Rows[row][0].ToString() + ","
-                            + my_datatable.Rows[row][13].ToString() + ","
-                            + my_datatable.Rows[row][14].ToString() + ","
-                            + my_datatable.Rows[row][15].ToString() + ","
-                            + my_datatable.Rows[row][5].ToString() + ","
-                            + my_datatable.Rows[row][6].ToString() + ","
-                            + my_datatable.Rows[row][7].ToString() + ","
-                            + "," //my_datatable.Rows[row][8].ToString() + ","
-                            + "," //my_datatable.Rows[row][11].ToString() + ","
-                            + my_datatable.Rows[row][11].ToString()
+                        string line = "";
+                        //line += (string.IsNullOrEmpty(line) ? "" : ",")
+                        line += "" 
+                            + my_datatable.Rows[row][1].ToString() + ","        //Surname
+                            + my_datatable.Rows[row][0].ToString() + ","        //FirstName
+                            + my_datatable.Rows[row][13].ToString() + ","       //BirtDate
+                            + my_datatable.Rows[row][14].ToString() + ","       //Home Telephone Number
+                            + my_datatable.Rows[row][15].ToString() + ","       //Mobile Telephone
+                            + "" + ","         //Employer Telephone
+                            + "" + ","         //Work Telephone
+                            + my_datatable.Rows[row][5].ToString() + ","        //Email Address
+                            + "" + ","         //RegisteredCompanyName
+                            + "" + ","         //RegisteredCompanyNumber
+                            + "" + ","         //Company Telephone
+                            + "" + ","         //VehicleRegistrationNumber
+                            + "" + ","         //VehicleIdentificationNumber
+                            + "" + ","         //YourInternalReference
+                            + my_datatable.Rows[row][6].ToString() + ","        //Flat
+                            + my_datatable.Rows[row][7].ToString() + ","        //House Name
+                            + my_datatable.Rows[row][8].ToString() + ","        //House Number
+                            + my_datatable.Rows[row][11].ToString() + ","       //Street
+                            + my_datatable.Rows[row][11].ToString() + ","       //Town
+                            + my_datatable.Rows[row][11].ToString() + ","       //Postcode
+                            + "" + ","      //Card Number
+                            + "" + ","      //Account Number
+                            + "" + ","      //Sort Code
+                            + "" + ","      //Documentation Reference
                             ;
-                        //}
 
-                        sW.WriteLine(lines);
+                        sW.WriteLine(line);
                     }
 
                     MessageBox.Show("CIFAS File Successfully Generated.");
@@ -196,7 +233,16 @@ namespace CIFASFormatter3
                 //MessageBox.Show(my_datatable.Rows[i]["Address Line1"].ToString());
                 //Flat No Filteration
 
-                Match match = Regex.Match(my_datatable.Rows[i]["Address Line1"].ToString(), @"(.*)((?i)Flat Number|Flat No|Flat No:|Flat No.|Flat #|Flat,|Flat.|Flat|Apartment Number|Apartment No|Apartment #|Apartment )[\s*|\.*](\d*[\w/\w]*)\s*(.*)");
+                
+                string str = my_datatable.Rows[i]["Address Line1"].ToString();
+                int index = str.IndexOf("-");
+                string searchStr ="";
+                if (index > 0)
+                    searchStr += str.Substring(0, index + 1) + " " + str.Substring(index + 1);
+                else
+                    searchStr = str;
+
+                Match match = Regex.Match(searchStr, @"(.*)((?i)Flat Number|Flat No:|Flat No.|FLAT NO-|Flat NO - |Flat No -|Flat No|Flat #|Flat,|Flat.|Flat|Apartment Number|Apartment No|Apartment #|Apartment )[\s*|\.*](\d*[\w/\w]*)\s*(.*)");
 
                 // Here we check the Match instance.
                 if (match.Success)
@@ -204,26 +250,40 @@ namespace CIFASFormatter3
                     // Finally, we get the Group value and display it.
                     string key = match.Groups[1].Value;
                     //MessageBox.Show(key);
-                    //MessageBox.Show(match.Groups[2].Value);
-                    //MessageBox.Show(match.Groups[3].Value);
-                    //MessageBox.Show(match.Groups[4].Value);
 
-                    if (match.Groups[3].Value.Length > 2 && match.Groups[3].Value.All(char.IsLetter))
+                    if (key.Trim().ToUpper().Contains("GROUND FLOOR") ||
+                        key.Trim().ToUpper().Contains("TOP") ||
+                        key.Trim().ToUpper().Contains("WARDEN") ||
+                        key.Trim().ToUpper().Contains("1ST FLOOR")
+                        )
                     {
+                        my_datatable.Rows[i]["Flat No"] = key.ToUpper() + " FLAT";
 
-                        DataRow dr = exception_datatable.NewRow();
-                        for (int j = 0; j < my_datatable.Columns.Count; j++)
-                        {
-                            dr[my_datatable.Columns[j].ColumnName] = my_datatable.Rows[i][j];
-                        }
-                        dr["Exception"] = "Invalid Flat Number";
-                        my_datatable.Rows.RemoveAt(i);
-                        exception_datatable.Rows.Add(dr);
                     }
                     else
                     {
-                        my_datatable.Rows[i]["Flat No"] = match.Groups[3].Value;
-                        my_datatable.Rows[i]["Address Line"] = match.Groups[1].Value.Trim() + " " + match.Groups[4].Value.Trim();
+
+                        //MessageBox.Show(match.Groups[2].Value);
+                        //MessageBox.Show(match.Groups[3].Value);
+                        //MessageBox.Show(match.Groups[4].Value);
+
+                        if (match.Groups[3].Value.Length >= 2 && match.Groups[3].Value.All(char.IsLetter))
+                        {
+
+                            DataRow dr = exception_datatable.NewRow();
+                            for (int j = 0; j < my_datatable.Columns.Count; j++)
+                            {
+                                dr[my_datatable.Columns[j].ColumnName] = my_datatable.Rows[i][j];
+                            }
+                            dr["Exception"] = "Invalid Flat Number";
+                            my_datatable.Rows.RemoveAt(i);
+                            exception_datatable.Rows.Add(dr);
+                        }
+                        else
+                        {
+                            my_datatable.Rows[i]["Flat No"] = match.Groups[3].Value;
+                            my_datatable.Rows[i]["Address Line"] = match.Groups[1].Value.Trim() + " " + match.Groups[4].Value.Trim();
+                        }
                     }
                 }
                 else
@@ -374,11 +434,11 @@ namespace CIFASFormatter3
                     {
                         String address = my_datatable.Rows[i]["Street"].ToString().ToUpper();
 
-                        MessageBox.Show(postcodeRegionMap[match.Groups[1].Value].ToString().ToUpper() + " - " + postcodeTownMap[match.Groups[1].Value].ToString().ToUpper());
+                        //MessageBox.Show(postcodeRegionMap[match.Groups[1].Value].ToString().ToUpper() + " - " + postcodeTownMap[match.Groups[1].Value].ToString().ToUpper());
 
                         if (!postcodeRegionMap[match.Groups[1].Value].ToString().Equals("") && address.EndsWith(postcodeRegionMap[match.Groups[1].Value].ToString().ToUpper()))
                         {
-                            MessageBox.Show("One");
+                            //MessageBox.Show("One");
                             my_datatable.Rows[i]["State"] = "-" + match.Groups[1].Value + "-" + postcodeRegionMap[match.Groups[1].Value].ToString();
 
                             my_datatable.Rows[i]["Town"] = postcodeRegionMap[match.Groups[1].Value].ToString().ToUpper();
@@ -388,7 +448,7 @@ namespace CIFASFormatter3
                         }
                         else if (!postcodeTownMap[match.Groups[1].Value].ToString().Equals("") && address.EndsWith(postcodeTownMap[match.Groups[1].Value].ToString().ToUpper()))
                         {
-                            MessageBox.Show("Two");
+                            //MessageBox.Show("Two");
                             my_datatable.Rows[i]["State"] = "-" + match.Groups[1].Value + "-" + postcodeTownMap[match.Groups[1].Value].ToString();
 
                             my_datatable.Rows[i]["Town"] = postcodeTownMap[match.Groups[1].Value].ToString().ToUpper();
@@ -740,6 +800,8 @@ namespace CIFASFormatter3
 
             my_dataviewer.Sorted += new EventHandler(my_dataviewer_sorted);
 
+            exceptionViewer.Sorted += new EventHandler(exceptionViewer_Sorted);
+
             
             this.Size = new Size(1200, 700);
             my_dataviewer.Size = new Size(1000, 400);
@@ -833,6 +895,12 @@ namespace CIFASFormatter3
                 file.Close();
             }
 
+        }
+
+        void exceptionViewer_Sorted(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+            setRowNumber(exceptionViewer);
         }
 
         void my_dataviewer_MouseClick(object sender, MouseEventArgs e)
@@ -964,28 +1032,60 @@ namespace CIFASFormatter3
 
             string[] data_col = null;
 
-            int x = 0;
+            //int x = 0;
             int row =0;
 
             exception_datatable.Columns.Add("Exception");
 
             foreach (string text_line in raw_data)
             {
-                //empty text_line need to be tested and filtered
-
-                //data_col = text_line.Split(',');
-                data_col = text_line.Split('|');
-
-                if (x == 0)
+                if (text_line.Contains("##start##"))
                 {
-                    for (int i = 0; i <= data_col.Count() - 1; i++)
-                    {
-                        my_datatable.Columns.Add(data_col[i]);
-                        exception_datatable.Columns.Add(data_col[i]);
-                    }
-                    x++;
-
-                    //Additional data columns added on 14/09/2017
+                    //
+                    my_datatable.Columns.Add("Surname");
+                    exception_datatable.Columns.Add("Surname");
+                    //
+                    my_datatable.Columns.Add("First Name");
+                    exception_datatable.Columns.Add("First Name");
+                    //
+                    my_datatable.Columns.Add("Middle Name");
+                    exception_datatable.Columns.Add("Middle Name");
+                    //
+                    my_datatable.Columns.Add("Birth Date");
+                    exception_datatable.Columns.Add("Birth Date");
+                    //
+                    my_datatable.Columns.Add("Home Telephone");
+                    exception_datatable.Columns.Add("Home Telephone");
+                    //
+                    my_datatable.Columns.Add("Mobile Telephone");
+                    exception_datatable.Columns.Add("Mobile Telephone");
+                    //
+                    my_datatable.Columns.Add("Email");
+                    exception_datatable.Columns.Add("Email");
+                    //
+                    my_datatable.Columns.Add("Customer ID");
+                    exception_datatable.Columns.Add("Customer ID");
+                    //
+                    my_datatable.Columns.Add("Address Line1");
+                    exception_datatable.Columns.Add("Address Line1");
+                    //
+                    my_datatable.Columns.Add("Address Line2");
+                    exception_datatable.Columns.Add("Address Line2");
+                    //
+                    my_datatable.Columns.Add("Town");
+                    exception_datatable.Columns.Add("Town");
+                    //
+                    my_datatable.Columns.Add("State");
+                    exception_datatable.Columns.Add("State");
+                    //
+                    my_datatable.Columns.Add("Postcode");
+                    exception_datatable.Columns.Add("Postcode");
+                    //
+                    my_datatable.Columns.Add("Country");
+                    exception_datatable.Columns.Add("Country");
+                    //
+                    my_datatable.Columns.Add("END");
+                    exception_datatable.Columns.Add("END");
                     //Flat No
                     my_datatable.Columns.Add("Flat No");
                     exception_datatable.Columns.Add("Flat No");
@@ -1002,14 +1102,23 @@ namespace CIFASFormatter3
                     my_datatable.Columns.Add("Address Line");
                     exception_datatable.Columns.Add("Address Line");
 
+                    continue;
+                }
+                else if (text_line.Contains("##end##"))
+                {
+                    break;
                 }
                 else
                 {
+                    //MessageBox.Show( text_line );
+                    data_col = text_line.Split('|');
+
                     try
                     {
+                        //MessageBox.Show(text_line);
                         //MessageBox.Show("" +data_col.Count());
-                        //if (data_col[14].ToString().Length > 0 && data_col[14].ToString().ToUpper().Equals("UNITED KINGDOM"))
-                        if (data_col[12].ToString().Length > 0 && data_col[12].ToString().ToUpper().Equals("UNITED KINGDOM"))
+                        if (data_col[13].ToString().Length > 0 && data_col[13].ToString().ToUpper().Equals("UNITED KINGDOM"))
+                        //if (data_col[12].ToString().Length > 0 && data_col[12].ToString().ToUpper().Equals("UNITED KINGDOM"))
                         {
                             my_datatable.Rows.Add(data_col);
                         }
@@ -1026,7 +1135,7 @@ namespace CIFASFormatter3
                              * */
 
                             if (
-                                data_col[4].ToString().Trim().StartsWith("+0044") || 
+                                data_col[4].ToString().Trim().StartsWith("+0044") ||
                                 data_col[4].ToString().Trim().StartsWith("+00044")
                                )
                             {
@@ -1040,7 +1149,9 @@ namespace CIFASFormatter3
 
 
                         }
-                    }catch(Exception e){
+                    }
+                    catch (Exception e)
+                    {
                         MessageBox.Show("Unable to Find Country Column within data file : \n\n\n" + e.ToString());
                         break;
                     }
@@ -1068,6 +1179,7 @@ namespace CIFASFormatter3
                 "Mobile Telephone",
                 "Email",
                 "Customer ID",
+                "Middle Name",
                 "END");
 
 
@@ -1090,6 +1202,7 @@ namespace CIFASFormatter3
                  "Mobile Telephone",
                  "Email",
                  "Customer ID",
+                 "Middle Name",
                  "END",
                  "Exception");
 
@@ -1103,18 +1216,19 @@ namespace CIFASFormatter3
             my_dataviewer.Update();
             my_dataviewer.Refresh();
             my_dataviewer.DataSource = my_datatable;
-            my_dataviewer.Columns[17].Visible = true;
             my_dataviewer.Columns[4].Visible = true; //false;
-            my_dataviewer.Columns[18].Visible = true; //false;
+            my_dataviewer.Columns[17].Visible = true;
+            my_dataviewer.Columns[18].Visible = false;
+            my_dataviewer.Columns[19].Visible = false;
 
             exceptionViewer.DataSource = null;
             exceptionViewer.Update();
             exceptionViewer.Refresh();
             exceptionViewer.DataSource = exception_datatable;
-            exceptionViewer.Columns[17].Visible = true;
             exceptionViewer.Columns[4].Visible = false;
+            exceptionViewer.Columns[17].Visible = true;
             exceptionViewer.Columns[18].Visible = false;
-
+            exceptionViewer.Columns[19].Visible = false;
 
             SelectRowsWithKnownExceptions();
 
@@ -1155,6 +1269,46 @@ namespace CIFASFormatter3
             SelectRowsWithKnownExceptions();
             //this.my_dataviewer.FirstDisplayedCell = this.my_dataviewer.CurrentCell;
             //MessageBox.Show("DataGrid Sorted Completed");
+            //MessageBox.Show("DataGrid Column Header Click");
+            setRowNumber(my_dataviewer);
+        }
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            System.Drawing.Rectangle workingRectangle =  Screen.PrimaryScreen.WorkingArea;
+            //MessageBox.Show(workingRectangle.Width + " - " + workingRectangle.Height);
+
+            btn_process.Text = "Load CSV File";
+            btn_process.Size = new Size(150, 30);
+            btn_process.Location = new Point(workingRectangle.Width - 150 - 30, 5);
+
+            btn_process_flatnos.Text = "Format Flat Nos";
+            btn_process_flatnos.Size = new Size(150, 30);
+            btn_process_flatnos.Location = new Point(1000 + 30, 40 + 30);
+
+            btn_process_housenos.Text = "Format House No && Name";
+            btn_process_housenos.Size = new Size(150, 30);
+            btn_process_housenos.Location = new Point(1000 + 30, 75 + 30);
+
+        }
+
+        private void Form1_SizeChanged(object sender, EventArgs e)
+        {
+            System.Drawing.Rectangle workingRectangle = Screen.PrimaryScreen.WorkingArea;
+            //MessageBox.Show(workingRectangle.Width + " - " + workingRectangle.Height);
+
+
+            btn_process.Text = "Load CSV File";
+            btn_process.Size = new Size(150, 30);
+            btn_process.Location = new Point(workingRectangle.Width - 150 - 30, 5);
+
+            btn_process_flatnos.Text = "Format Flat Nos";
+            btn_process_flatnos.Size = new Size(150, 30);
+            btn_process_flatnos.Location = new Point(1000 + 30, 40 + 30);
+
+            btn_process_housenos.Text = "Format House No && Name";
+            btn_process_housenos.Size = new Size(150, 30);
+            btn_process_housenos.Location = new Point(1000 + 30, 75 + 30);
         }
     }
 }
